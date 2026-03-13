@@ -1,14 +1,57 @@
-import express from 'express';
+import { eq } from 'drizzle-orm';
+// The 'pool' export will only exist (and be non-null) for WebSocket and node-postgres drivers
+import { index, pool } from './db/index.js';
+import {demoUsers} from "./db/schema/demo.js";
 
-const app = express();
-const port = 8000;
 
-app.use(express.json());
+async function main() {
+  try {
+    console.log('Performing CRUD operations...');
 
-app.get('/', (req, res) => {
-  res.send('Hello from Classroom Backend!');
-});
+    // CREATE: Insert a new user
+    const [newUser] = await index
+      .insert(demoUsers)
+      .values({ name: 'Admin User', email: 'admin@example.com' })
+      .returning();
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
+    if (!newUser) {
+      throw new Error('Failed to create user');
+    }
+    
+    console.log('✅ CREATE: New user created:', newUser);
+
+    // READ: Select the user
+    const foundUser = await index.select().from(demoUsers).where(eq(demoUsers.id, newUser.id));
+    console.log('✅ READ: Found user:', foundUser[0]);
+
+    // UPDATE: Change the user's name
+    const [updatedUser] = await index
+      .update(demoUsers)
+      .set({ name: 'Super Admin' })
+      .where(eq(demoUsers.id, newUser.id))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error('Failed to update user');
+    }
+    
+    console.log('✅ UPDATE: User updated:', updatedUser);
+
+    // DELETE: Remove the user
+    await index.delete(demoUsers).where(eq(demoUsers.id, newUser.id));
+    console.log('✅ DELETE: User deleted.');
+
+    console.log('\nCRUD operations completed successfully.');
+  } catch (error) {
+    console.error('❌ Error performing CRUD operations:', error);
+    process.exit(1);
+  } finally {
+    // If the pool exists, end it to close the connection
+    if (pool && typeof (pool as any).end === 'function') {
+      await (pool as any).end();
+      console.log('Database pool closed.');
+    }
+  }
+}
+
+main();
