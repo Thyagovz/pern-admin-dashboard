@@ -4,7 +4,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {useBack} from "@refinedev/core";
 import {Separator} from "@/components/ui/separator.tsx";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {useForm} from "react-hook-form";
+import {useForm} from "@refinedev/react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {classSchema} from "@/lib/schema.ts";
 
@@ -56,7 +56,7 @@ const Create = () => {
 
     const {handleSubmit, formState: {isSubmitting, errors}, control} = form;
 
-    const setBannerImage = (file, field) => {
+    const setBannerImage = (file: any, field: any) => {
         if (file) {
             field.onChange(file.url);
             form.setValue("bannerCldPubId", file.publicId, {
@@ -110,7 +110,7 @@ const Create = () => {
                                                         url: field.value,
                                                         publicId: bannerPublicId ?? ""
                                                     } : null}
-                                                    onChange={(file: any, field: any) => setBannerImage(file, field)}
+                                                    onChange={(file: any) => setBannerImage(file, field)}
                                                 />
                                             </FormControl>
                                             <FormMessage/>
