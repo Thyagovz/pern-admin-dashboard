@@ -17,7 +17,7 @@ const aj = arcjet({
         }),
         slidingWindow({
             mode: "LIVE",
-            interval: "2",
+            interval: "2m",
             max: 5,
         })
     ],
