@@ -1,7 +1,7 @@
 import {CreateView} from "@/components/refine-ui/views/create-view.tsx";
 import {Breadcrumb} from "@/components/refine-ui/layout/breadcrumb.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {useBack} from "@refinedev/core";
+import {useBack, useList} from "@refinedev/core";
 import {Separator} from "@/components/ui/separator.tsx";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {useForm} from "@refinedev/react-hook-form";
@@ -15,22 +15,7 @@ import {Input} from "@/components/ui/input.tsx";
 import UploadWidget from "@/components/upload-widget.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {Loader2} from "lucide-react";
-
-
-const teachers = [
-    {id: 1, name: "John Doe"},
-    {id: 2, name: "Jane Smith"},
-    {id: 3, name: "Robert Johnson"},
-    {id: 4, name: "Emily Davis"},
-];
-
-const subjects = [
-    {id: 1, name: "Mathematics", code: "MATHEMATICS"},
-    {id: 2, name: "Science", code: "SCIENCE"},
-    {id: 3, name: "History", code: "HISTORY"},
-    {id: 4, name: "Literature", code: "LITERATURE"},
-];
-
+import {Subject, User} from "@/types";
 
 const Create = () => {
     const back = useBack();
@@ -43,18 +28,45 @@ const Create = () => {
         },
     });
 
-    const onSubmit = (values: z.infer<typeof classSchema>) => {
+    const {
+        refineCore: { onFinish },
+        handleSubmit,
+        formState: { isSubmitting, errors },
+        control
+    } = form;
+
+    const onSubmit = async (values: z.infer<typeof classSchema>) => {
         try {
-            console.log(values);
+            await onFinish(values);
         } catch (e) {
             console.log("Error creating new classes", e);
         }
+    };
 
-    }
+    const {query: subjectsQuery} = useList<Subject>({
+        resource: "subjects",
+        pagination: {
+            pageSize: 100,
+        }
+    });
+
+    const {query: teachersQuery} = useList<User>({
+        resource: "users",
+        filters: [{
+            field: "role", operator: "eq", value: "teacher"
+        }],
+        pagination: {
+            pageSize: 100,
+        }
+    });
+
+    const subjects = subjectsQuery?.data?.data || [];
+    const subjectsLoading = subjectsQuery.isLoading;
+
+    const teachers = teachersQuery?.data?.data || [];
+    const teachersLoading = subjectsQuery.isLoading;
 
     const bannerPublicId = form.watch("bannerCldPubId")
-
-    const {handleSubmit, formState: {isSubmitting, errors}, control} = form;
 
     const setBannerImage = (file: any, field: any) => {
         if (file) {
@@ -157,6 +169,7 @@ const Create = () => {
                                                         field.onChange(Number(value))
                                                     }
                                                     value={field.value?.toString()}
+                                                    disabled={subjectsLoading}
                                                 >
                                                     <FormControl>
                                                         <SelectTrigger className="w-full">
@@ -190,6 +203,7 @@ const Create = () => {
                                                 <Select
                                                     onValueChange={field.onChange}
                                                     value={field.value}
+                                                    disabled={teachersLoading}
                                                 >
                                                     <FormControl>
                                                         <SelectTrigger className="w-full">

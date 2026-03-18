@@ -2,12 +2,17 @@ import AgentAPI from "apminsight"
 AgentAPI.config()
 
 import express from 'express';
-import 'dotenv/config';
-import subjectsRouter from "./routes/subjects.js";
 import cors from "cors";
+
+import subjectsRouter from "./routes/subjects.js";
+import usersRouter from "./routes/users.js";
+import classesRouter from "./routes/classes.js";
 import securityMiddleware from "./middleware/security.js";
+
 import {toNodeHandler} from "better-auth/node";
 import {auth} from "./lib/auth.js";
+
+import 'dotenv/config';
 
 const app = express();
 const port = 8000;
@@ -29,6 +34,8 @@ app.use(express.json());
 app.use(securityMiddleware);
 
 app.use('/api/subjects', subjectsRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/classes', classesRouter)
 
 app.get('/', (req, res) => {
     res.send('Welcome to the Classroom API!');
