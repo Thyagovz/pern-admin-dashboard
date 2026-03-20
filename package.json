@@ -1,0 +1,15 @@
+{
+  "name": "classroom",
+  "private": true,
+  "workspaces": [
+    "classroom-backend",
+    "classroom-frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=classroom-backend",
+    "dev:frontend": "npm run dev --workspace=classroom-frontend",
+    "build:backend": "npm run build --workspace=classroom-backend",
+    "build:frontend": "npm run build --workspace=classroom-frontend",
+    "install:all": "npm install --legacy-peer-deps"
+  }
+}
